@@ -1,26 +1,25 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useData } from '../context/DataContext';
-import { 
-  Wallet, 
-  TrendingUp, 
-  TrendingDown, 
+import {
+  Wallet,
+  TrendingUp,
+  TrendingDown,
   Plus,
   ArrowUpRight,
-  ArrowDownRight,
-  DollarSign
+  ArrowDownRight
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import './Dashboard.css';
 
 const Dashboard = () => {
-  const { 
-    transactions, 
-    budgets, 
-    getTotalBalance, 
-    getTotalIncome, 
+  const {
+    transactions,
+    budgets,
+    getTotalBalance,
+    getTotalIncome,
     getTotalExpenses,
-    getTransactionsByCategory 
+    getTransactionsByCategory
   } = useData();
 
   const totalBalance = getTotalBalance();
@@ -45,7 +44,7 @@ const Dashboard = () => {
     const expenses = dayTransactions
       .filter(t => t.type === 'expense')
       .reduce((sum, t) => sum + t.amount, 0);
-    
+
     return {
       date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
       income,
@@ -126,17 +125,17 @@ const Dashboard = () => {
                 <XAxis dataKey="date" />
                 <YAxis />
                 <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
-                <Line 
-                  type="monotone" 
-                  dataKey="income" 
-                  stroke="#10b981" 
+                <Line
+                  type="monotone"
+                  dataKey="income"
+                  stroke="#10b981"
                   strokeWidth={2}
                   name="Income"
                 />
-                <Line 
-                  type="monotone" 
-                  dataKey="expenses" 
-                  stroke="#ef4444" 
+                <Line
+                  type="monotone"
+                  dataKey="expenses"
+                  stroke="#ef4444"
                   strokeWidth={2}
                   name="Expenses"
                 />
@@ -189,7 +188,7 @@ const Dashboard = () => {
               currentBudgets.map(budget => {
                 const percentage = (budget.spent / budget.amount) * 100;
                 const isOverBudget = percentage > 100;
-                
+
                 return (
                   <div key={budget.id} className="budget-item">
                     <div className="budget-info">
@@ -199,7 +198,7 @@ const Dashboard = () => {
                       </span>
                     </div>
                     <div className="budget-progress-bar">
-                      <div 
+                      <div
                         className={`budget-progress-fill ${isOverBudget ? 'over-budget' : ''}`}
                         style={{ width: `${Math.min(percentage, 100)}%` }}
                       />

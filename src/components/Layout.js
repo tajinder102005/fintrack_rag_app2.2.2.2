@@ -9,7 +9,6 @@ import {
   Target,
   FileText,
   Bell,
-  Settings,
   LogOut,
   Menu,
   X,
@@ -53,7 +52,7 @@ const Layout = ({ children }) => {
           <div className="logo">
             <h2>finTrack</h2>
           </div>
-          <button 
+          <button
             className="sidebar-close"
             onClick={() => setSidebarOpen(false)}
           >
@@ -65,7 +64,7 @@ const Layout = ({ children }) => {
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
-            
+
             return (
               <Link
                 key={item.path}
@@ -100,7 +99,7 @@ const Layout = ({ children }) => {
         {/* Header */}
         <header className="header">
           <div className="header-left">
-            <button 
+            <button
               className="menu-toggle"
               onClick={() => setSidebarOpen(true)}
             >
@@ -113,8 +112,8 @@ const Layout = ({ children }) => {
 
           <div className="header-right">
             <div className="user-profile">
-              <img 
-                src={user?.avatar} 
+              <img
+                src={user?.avatar}
                 alt={user?.name}
                 className="user-avatar"
               />
@@ -131,7 +130,7 @@ const Layout = ({ children }) => {
 
       {/* Sidebar Overlay */}
       {sidebarOpen && (
-        <div 
+        <div
           className="sidebar-overlay"
           onClick={() => setSidebarOpen(false)}
         />

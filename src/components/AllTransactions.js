@@ -1,13 +1,11 @@
 import React, { useState, useMemo } from 'react';
 import { useData } from '../context/DataContext';
-import { 
-  Search, 
-  Filter, 
-  ArrowUpRight, 
-  ArrowDownRight, 
-  Edit, 
+import {
+  Search,
+  ArrowUpRight,
+  ArrowDownRight,
+  Edit,
   Trash2,
-  Calendar,
   Tag,
   DollarSign
 } from 'lucide-react';
@@ -31,17 +29,17 @@ const AllTransactions = () => {
   const filteredTransactions = useMemo(() => {
     let filtered = transactions.filter(transaction => {
       const matchesSearch = transaction.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           transaction.category.toLowerCase().includes(searchTerm.toLowerCase());
+        transaction.category.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesType = filterType === 'all' || transaction.type === filterType;
       const matchesCategory = filterCategory === 'all' || transaction.category === filterCategory;
-      
+
       return matchesSearch && matchesType && matchesCategory;
     });
 
     // Sort transactions
     filtered.sort((a, b) => {
       let aValue, bValue;
-      
+
       switch (sortBy) {
         case 'date':
           aValue = new Date(a.date);
@@ -183,7 +181,7 @@ const AllTransactions = () => {
             <div className="transactions-count">
               Showing {filteredTransactions.length} of {transactions.length} transactions
             </div>
-            
+
             <div className="transactions-table">
               <div className="table-header">
                 <div className="col-type">Type</div>
@@ -207,30 +205,30 @@ const AllTransactions = () => {
                         <span>{transaction.type}</span>
                       </div>
                     </div>
-                    
+
                     <div className="col-description">
                       <span className="description-text">{transaction.description}</span>
                     </div>
-                    
+
                     <div className="col-category">
                       <span className="category-tag">
                         <Tag size={12} />
                         {transaction.category}
                       </span>
                     </div>
-                    
+
                     <div className="col-amount">
                       <span className={`amount ${transaction.type}`}>
                         {transaction.type === 'income' ? '+' : '-'}${transaction.amount.toFixed(2)}
                       </span>
                     </div>
-                    
+
                     <div className="col-date">
                       <span className="date-text">
                         {new Date(transaction.date).toLocaleDateString()}
                       </span>
                     </div>
-                    
+
                     <div className="col-actions">
                       <button
                         className="action-btn edit-btn"

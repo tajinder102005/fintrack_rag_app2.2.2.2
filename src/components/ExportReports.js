@@ -4,7 +4,7 @@ import { FileText, Download, Calendar, Filter, BarChart3 } from 'lucide-react';
 import './ExportReports.css';
 
 const ExportReports = () => {
-  const { transactions, budgets, getTotalBalance, getTotalIncome, getTotalExpenses } = useData();
+  const { transactions, budgets } = useData();
   const [reportType, setReportType] = useState('transactions');
   const [dateRange, setDateRange] = useState('month');
   const [customStartDate, setCustomStartDate] = useState('');
@@ -57,7 +57,7 @@ const ExportReports = () => {
         t.description,
         t.amount.toFixed(2)
       ]);
-      
+
       return [headers, ...rows]
         .map(row => row.map(cell => `"${cell}"`).join(','))
         .join('\n');
@@ -80,10 +80,10 @@ const ExportReports = () => {
       csv += `Total Income,${totalIncome.toFixed(2)}\n`;
       csv += `Total Expenses,${totalExpenses.toFixed(2)}\n`;
       csv += `Net Amount,${netAmount.toFixed(2)}\n\n`;
-      
+
       csv += 'Category Breakdown\n';
       csv += 'Category,Income,Expenses,Net\n';
-      
+
       Object.entries(categoryBreakdown).forEach(([category, amounts]) => {
         const net = amounts.income - amounts.expense;
         csv += `${category},${amounts.income.toFixed(2)},${amounts.expense.toFixed(2)},${net.toFixed(2)}\n`;
@@ -157,7 +157,7 @@ const ExportReports = () => {
         {/* Report Configuration */}
         <div className="report-config">
           <h3>Report Configuration</h3>
-          
+
           <div className="config-section">
             <label className="form-label">Report Type</label>
             <div className="report-type-options">
@@ -281,7 +281,7 @@ const ExportReports = () => {
         {/* Report Preview */}
         <div className="report-preview">
           <h3>Report Preview</h3>
-          
+
           {reportType !== 'budgets' ? (
             <>
               <div className="preview-stats">
