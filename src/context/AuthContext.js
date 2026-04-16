@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { api } from '../services/api';
 
 const AuthContext = createContext();
 
@@ -16,56 +17,93 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in from localStorage
-    const savedUser = localStorage.getItem('fintrack_user');
-    const savedAuth = localStorage.getItem('fintrack_auth');
-    
-    if (savedUser && savedAuth === 'true') {
-      setUser(JSON.parse(savedUser));
-      setIsAuthenticated(true);
+    // Check if user info is in URL (OAuth redirect)
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    const userJson = urlParams.get('user');
+
+    if (token && userJson) {
+      try {
+        const parsedUser = JSON.parse(decodeURIComponent(userJson));
+        localStorage.setItem('fintrack_token', token);
+        localStorage.setItem('fintrack_user', JSON.stringify(parsedUser));
+        setUser(parsedUser);
+        setIsAuthenticated(true);
+        // Clear query parameters
+        window.history.replaceState({}, document.title, window.location.pathname);
+      } catch (error) {
+        console.error('Failed to parse user from OAuth redirect:', error);
+      }
+    } else {
+      // Standard local storage check
+      const savedToken = localStorage.getItem('fintrack_token');
+      const savedUser = localStorage.getItem('fintrack_user');
+
+      if (savedToken && savedUser) {
+        try {
+          setUser(JSON.parse(savedUser));
+          setIsAuthenticated(true);
+        } catch (error) {
+          console.error('Failed to parse saved user:', error);
+          localStorage.removeItem('fintrack_token');
+          localStorage.removeItem('fintrack_user');
+        }
+      }
     }
     setLoading(false);
   }, []);
 
-  const login = (email, password) => {
-    // Simulate login - in real app, this would be an API call
-    const userData = {
-      id: 1,
-      name: 'John Doe',
-      email: email,
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face&auto=format'
-    };
-    
-    setUser(userData);
-    setIsAuthenticated(true);
-    localStorage.setItem('fintrack_user', JSON.stringify(userData));
-    localStorage.setItem('fintrack_auth', 'true');
-    
-    return { success: true };
+  const login = async (email, password) => {
+    try {
+      const response = await api.login({ email, password });
+
+      if (response && response.token && response.user) {
+        setUser(response.user);
+        setIsAuthenticated(true);
+        localStorage.setItem('fintrack_token', response.token);
+        localStorage.setItem('fintrack_user', JSON.stringify(response.user));
+
+        return { success: true };
+      } else {
+        return { success: false, message: 'Server did not return a valid session' };
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      return {
+        success: false,
+        message: error.message || 'Login failed. Please check your credentials.'
+      };
+    }
   };
 
-  const register = (name, email, password) => {
-    // Simulate registration - in real app, this would be an API call
-    const userData = {
-      id: 1,
-      name: name,
-      email: email,
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face&auto=format'
-    };
-    
-    setUser(userData);
-    setIsAuthenticated(true);
-    localStorage.setItem('fintrack_user', JSON.stringify(userData));
-    localStorage.setItem('fintrack_auth', 'true');
-    
-    return { success: true };
+  const register = async (name, email, password) => {
+    try {
+      const response = await api.register({ name, email, password });
+
+      if (response && response.token && response.user) {
+        setUser(response.user);
+        setIsAuthenticated(true);
+        localStorage.setItem('fintrack_token', response.token);
+        localStorage.setItem('fintrack_user', JSON.stringify(response.user));
+
+        return { success: true };
+      } else {
+        return { success: false, message: 'Server did not return a valid session' };
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      return {
+        success: false,
+        message: error.message || 'Registration failed. Please try again.'
+      };
+    }
   };
 
   const logout = () => {
     setUser(null);
     setIsAuthenticated(false);
+    localStorage.removeItem('fintrack_token');
     localStorage.removeItem('fintrack_user');
-    localStorage.removeItem('fintrack_auth');
   };
 
   const value = {

@@ -34,14 +34,14 @@ const Login = () => {
     }
 
     try {
-      const result = login(formData.email, formData.password);
+      const result = await login(formData.email, formData.password);
       if (!result.success) {
-        setError('Invalid email or password');
+        setError(result.message || 'Invalid email or password');
       }
     } catch (err) {
-      setError('Something went wrong. Please try again.');
+      setError(err.message || 'Something went wrong. Please try again.');
     }
-    
+
     setLoading(false);
   };
 
@@ -111,6 +111,19 @@ const Login = () => {
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
+
+        <div className="auth-separator">OR</div>
+
+        <div className="social-auth">
+          <a href="http://localhost:5000/api/auth/google" className="btn-social btn-google" onClick={(e) => { e.preventDefault(); alert('Google OAuth not configured yet. Please use email/password login.'); }}>
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
+            Continue with Google
+          </a>
+          <a href="http://localhost:5000/api/auth/github" className="btn-social btn-github" onClick={(e) => { e.preventDefault(); alert('GitHub OAuth not configured yet. Please use email/password login.'); }}>
+            <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub" style={{ filter: 'invert(1)', width: '20px' }} />
+            Continue with GitHub
+          </a>
+        </div>
 
         <div className="auth-footer">
           <p>

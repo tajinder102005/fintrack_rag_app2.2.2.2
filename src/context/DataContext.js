@@ -1,4 +1,7 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import { api } from '../services/api';
+import { useAuth } from './AuthContext';
+import io from 'socket.io-client';
 
 const DataContext = createContext();
 
@@ -14,158 +17,259 @@ export const DataProvider = ({ children }) => {
   const [transactions, setTransactions] = useState([]);
   const [budgets, setBudgets] = useState([]);
   const [notifications, setNotifications] = useState([]);
+  const { user } = useAuth();
+  const socketRef = useRef(null);
 
-  // Load data from localStorage on mount
+  // Initialize Socket.io connection
   useEffect(() => {
-    const savedTransactions = localStorage.getItem('fintrack_transactions');
-    const savedBudgets = localStorage.getItem('fintrack_budgets');
-    const savedNotifications = localStorage.getItem('fintrack_notifications');
+    if (user && user.id) {
+      // Connect to socket
+      socketRef.current = io(process.env.REACT_APP_API_URL?.replace('/api', '') || 'http://localhost:5000');
 
-    if (savedTransactions) {
-      setTransactions(JSON.parse(savedTransactions));
-    } else {
-      // Initialize with sample data
-      const sampleTransactions = [
-        {
-          id: 1,
-          type: 'expense',
-          amount: 85.50,
-          category: 'Food',
-          description: 'Groceries',
-          date: new Date().toISOString().split('T')[0],
-          createdAt: new Date().toISOString()
-        },
-        {
-          id: 2,
-          type: 'income',
-          amount: 2500.00,
-          category: 'Income',
-          description: 'Salary',
-          date: new Date().toISOString().split('T')[0],
-          createdAt: new Date().toISOString()
-        },
-        {
-          id: 3,
-          type: 'expense',
-          amount: 15.99,
-          category: 'Entertainment',
-          description: 'Online Subscription',
-          date: new Date().toISOString().split('T')[0],
-          createdAt: new Date().toISOString()
-        },
-        {
-          id: 4,
-          type: 'expense',
-          amount: 5.25,
-          category: 'Food',
-          description: 'Coffee Shop',
-          date: new Date().toISOString().split('T')[0],
-          createdAt: new Date().toISOString()
+      // Join user-specific room
+      socketRef.current.emit('join_user_room', user.id);
+
+      // Listen for transaction events
+      socketRef.current.on('transaction_added', (newTransaction) => {
+        setTransactions(prev => {
+          // Avoid duplicates if this client initiated the add
+          if (prev.some(t => t._id === newTransaction._id)) return prev;
+          return [newTransaction, ...prev];
+        });
+      });
+
+      socketRef.current.on('transaction_updated', (updatedTransaction) => {
+        setTransactions(prev =>
+          prev.map(t => t._id === updatedTransaction._id ? updatedTransaction : t)
+        );
+      });
+
+      socketRef.current.on('transaction_deleted', (id) => {
+        setTransactions(prev => prev.filter(t => t._id !== id));
+      });
+
+      // Listen for budget events
+      socketRef.current.on('budget_added', (newBudget) => {
+        setBudgets(prev => {
+          if (prev.some(b => b._id === newBudget._id)) return prev;
+          return [newBudget, ...prev];
+        });
+      });
+
+      socketRef.current.on('budget_updated', (updatedBudget) => {
+        setBudgets(prev =>
+          prev.map(b => b._id === updatedBudget._id ? updatedBudget : b)
+        );
+      });
+
+      socketRef.current.on('budget_deleted', (id) => {
+        setBudgets(prev => prev.filter(b => b._id !== id));
+      });
+
+      // Listen for notification events
+      socketRef.current.on('notification_added', (newNotification) => {
+        setNotifications(prev => {
+          if (prev.some(n => n._id === newNotification._id)) return prev;
+          return [newNotification, ...prev];
+        });
+      });
+
+      socketRef.current.on('notification_updated', (updatedNotification) => {
+        setNotifications(prev =>
+          prev.map(n => n._id === updatedNotification._id ? updatedNotification : n)
+        );
+      });
+
+      socketRef.current.on('notification_deleted', (id) => {
+        setNotifications(prev => prev.filter(n => n._id !== id));
+      });
+
+      return () => {
+        if (socketRef.current) {
+          socketRef.current.disconnect();
         }
-      ];
-      setTransactions(sampleTransactions);
+      };
     }
+  }, [user]);
 
-    if (savedBudgets) {
-      setBudgets(JSON.parse(savedBudgets));
-    } else {
-      // Initialize with sample budget
-      const sampleBudgets = [
-        {
-          id: 1,
-          category: 'Food',
-          amount: 500,
-          spent: 90.75,
-          month: new Date().getMonth() + 1,
-          year: new Date().getFullYear()
-        },
-        {
-          id: 2,
-          category: 'Entertainment',
-          amount: 200,
-          spent: 15.99,
-          month: new Date().getMonth() + 1,
-          year: new Date().getFullYear()
-        }
-      ];
-      setBudgets(sampleBudgets);
-    }
-
-    if (savedNotifications) {
-      setNotifications(JSON.parse(savedNotifications));
-    }
+  // Load data from API on mount
+  useEffect(() => {
+    loadData();
   }, []);
 
-  // Save to localStorage whenever data changes
-  useEffect(() => {
-    localStorage.setItem('fintrack_transactions', JSON.stringify(transactions));
-  }, [transactions]);
+  const loadData = async () => {
+    try {
+      const [transactionsData, budgetsData, notificationsData] = await Promise.all([
+        api.getTransactions(),
+        api.getBudgets(),
+        api.getNotifications()
+      ]);
 
-  useEffect(() => {
-    localStorage.setItem('fintrack_budgets', JSON.stringify(budgets));
-  }, [budgets]);
+      if (transactionsData.length === 0) {
+        // Initialize with sample data
+        const sampleTransactions = [
+          {
+            type: 'expense',
+            amount: 85.50,
+            category: 'Food',
+            description: 'Groceries',
+            date: new Date().toISOString().split('T')[0],
+            createdAt: new Date().toISOString()
+          },
+          {
+            type: 'income',
+            amount: 2500.00,
+            category: 'Income',
+            description: 'Salary',
+            date: new Date().toISOString().split('T')[0],
+            createdAt: new Date().toISOString()
+          },
+          {
+            type: 'expense',
+            amount: 15.99,
+            category: 'Entertainment',
+            description: 'Online Subscription',
+            date: new Date().toISOString().split('T')[0],
+            createdAt: new Date().toISOString()
+          },
+          {
+            type: 'expense',
+            amount: 5.25,
+            category: 'Food',
+            description: 'Coffee Shop',
+            date: new Date().toISOString().split('T')[0],
+            createdAt: new Date().toISOString()
+          }
+        ];
 
-  useEffect(() => {
-    localStorage.setItem('fintrack_notifications', JSON.stringify(notifications));
-  }, [notifications]);
+        // Create sample transactions in database
+        for (const transaction of sampleTransactions) {
+          await api.createTransaction(transaction);
+        }
+        setTransactions(sampleTransactions);
+      } else {
+        setTransactions(transactionsData);
+      }
 
-  const addTransaction = (transaction) => {
-    const newTransaction = {
-      ...transaction,
-      id: Date.now(),
-      createdAt: new Date().toISOString()
-    };
-    setTransactions(prev => [newTransaction, ...prev]);
+      if (budgetsData.length === 0) {
+        // Initialize with sample budget
+        const sampleBudgets = [
+          {
+            category: 'Food',
+            amount: 500,
+            spent: 90.75,
+            month: new Date().getMonth() + 1,
+            year: new Date().getFullYear()
+          },
+          {
+            category: 'Entertainment',
+            amount: 200,
+            spent: 15.99,
+            month: new Date().getMonth() + 1,
+            year: new Date().getFullYear()
+          }
+        ];
 
-    // Check budget and create notification if needed
-    if (transaction.type === 'expense') {
-      checkBudgetAlert(transaction.category, transaction.amount);
+        // Create sample budgets in database
+        for (const budget of sampleBudgets) {
+          await api.createBudget(budget);
+        }
+        setBudgets(sampleBudgets);
+      } else {
+        setBudgets(budgetsData);
+      }
+
+      setNotifications(notificationsData);
+    } catch (error) {
+      console.error('Error loading data:', error);
     }
-
-    return newTransaction;
   };
 
-  const updateTransaction = (id, updatedTransaction) => {
-    setTransactions(prev =>
-      prev.map(transaction =>
-        transaction.id === id ? { ...transaction, ...updatedTransaction } : transaction
-      )
-    );
+  // Save to API whenever data changes
+  useEffect(() => {
+    // Data is automatically saved when API calls are made
+    // No need for localStorage anymore
+  }, [transactions, budgets, notifications]);
+
+  const addTransaction = async (transaction) => {
+    try {
+      const newTransaction = await api.createTransaction(transaction);
+      setTransactions(prev => [newTransaction, ...prev]);
+
+      // Check budget and create notification if needed
+      if (transaction.type === 'expense') {
+        await checkBudgetAlert(transaction.category, transaction.amount);
+      }
+
+      return newTransaction;
+    } catch (error) {
+      console.error('Error adding transaction:', error);
+      throw error;
+    }
   };
 
-  const deleteTransaction = (id) => {
-    setTransactions(prev => prev.filter(transaction => transaction.id !== id));
+  const updateTransaction = async (id, updatedTransaction) => {
+    try {
+      const transaction = await api.updateTransaction(id, updatedTransaction);
+      setTransactions(prev =>
+        prev.map(t => t._id === id ? { ...t, ...transaction } : t)
+      );
+    } catch (error) {
+      console.error('Error updating transaction:', error);
+      throw error;
+    }
   };
 
-  const addBudget = (budget) => {
-    const newBudget = {
-      ...budget,
-      id: Date.now(),
-      spent: 0
-    };
-    setBudgets(prev => [newBudget, ...prev]);
-    return newBudget;
+  const deleteTransaction = async (id) => {
+    try {
+      await api.deleteTransaction(id);
+      setTransactions(prev => prev.filter(t => t._id !== id));
+    } catch (error) {
+      console.error('Error deleting transaction:', error);
+      throw error;
+    }
   };
 
-  const updateBudget = (id, updatedBudget) => {
-    setBudgets(prev =>
-      prev.map(budget =>
-        budget.id === id ? { ...budget, ...updatedBudget } : budget
-      )
-    );
+  const addBudget = async (budget) => {
+    try {
+      const newBudget = await api.createBudget({ ...budget, spent: 0 });
+      setBudgets(prev => [newBudget, ...prev]);
+      return newBudget;
+    } catch (error) {
+      console.error('Error adding budget:', error);
+      throw error;
+    }
   };
 
-  const deleteBudget = (id) => {
-    setBudgets(prev => prev.filter(budget => budget.id !== id));
+  const updateBudget = async (id, updatedBudget) => {
+    try {
+      const budget = await api.updateBudget(id, updatedBudget);
+      setBudgets(prev =>
+        prev.map(b => b._id === id ? { ...b, ...budget } : b)
+      );
+    } catch (error) {
+      console.error('Error updating budget:', error);
+      throw error;
+    }
   };
 
-  const checkBudgetAlert = (category, amount) => {
+  const deleteBudget = async (id) => {
+    try {
+      await api.deleteBudget(id);
+      setBudgets(prev => prev.filter(b => b._id !== id));
+    } catch (error) {
+      console.error('Error deleting budget:', error);
+      throw error;
+    }
+  };
+
+  const checkBudgetAlert = async (category, amount) => {
     const currentMonth = new Date().getMonth() + 1;
     const currentYear = new Date().getFullYear();
-    
-    const budget = budgets.find(b => 
-      b.category === category && 
-      b.month === currentMonth && 
+
+    const budget = budgets.find(b =>
+      b.category === category &&
+      b.month === currentMonth &&
       b.year === currentYear
     );
 
@@ -174,18 +278,18 @@ export const DataProvider = ({ children }) => {
       const percentage = (newSpent / budget.amount) * 100;
 
       // Update budget spent amount
-      updateBudget(budget.id, { ...budget, spent: newSpent });
+      await updateBudget(budget._id, { ...budget, spent: newSpent });
 
       // Create notification if over 80% or 100%
       if (percentage >= 100) {
-        addNotification({
+        await addNotification({
           type: 'error',
           title: 'Budget Exceeded!',
           message: `You've exceeded your ${category} budget by $${(newSpent - budget.amount).toFixed(2)}`,
           category: category
         });
       } else if (percentage >= 80) {
-        addNotification({
+        await addNotification({
           type: 'warning',
           title: 'Budget Alert',
           message: `You've used ${percentage.toFixed(1)}% of your ${category} budget`,
@@ -195,33 +299,46 @@ export const DataProvider = ({ children }) => {
     }
   };
 
-  const addNotification = (notification) => {
-    const newNotification = {
-      ...notification,
-      id: Date.now(),
-      createdAt: new Date().toISOString(),
-      read: false
-    };
-    setNotifications(prev => [newNotification, ...prev]);
+  const addNotification = async (notification) => {
+    try {
+      const newNotification = await api.createNotification(notification);
+      setNotifications(prev => [newNotification, ...prev]);
+      return newNotification;
+    } catch (error) {
+      console.error('Error adding notification:', error);
+      throw error;
+    }
   };
 
-  const markNotificationAsRead = (id) => {
-    setNotifications(prev =>
-      prev.map(notification =>
-        notification.id === id ? { ...notification, read: true } : notification
-      )
-    );
+  const markNotificationAsRead = async (id) => {
+    try {
+      await api.markNotificationAsRead(id);
+      setNotifications(prev =>
+        prev.map(notification =>
+          notification._id === id ? { ...notification, read: true } : notification
+        )
+      );
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+      throw error;
+    }
   };
 
-  const deleteNotification = (id) => {
-    setNotifications(prev => prev.filter(notification => notification.id !== id));
+  const deleteNotification = async (id) => {
+    try {
+      await api.deleteNotification(id);
+      setNotifications(prev => prev.filter(n => n._id !== id));
+    } catch (error) {
+      console.error('Error deleting notification:', error);
+      throw error;
+    }
   };
 
   // Calculate totals
   const getTotalBalance = () => {
     return transactions.reduce((total, transaction) => {
-      return transaction.type === 'income' 
-        ? total + transaction.amount 
+      return transaction.type === 'income'
+        ? total + transaction.amount
         : total - transaction.amount;
     }, 0);
   };
@@ -249,8 +366,8 @@ export const DataProvider = ({ children }) => {
         };
       }
       categories[transaction.category][transaction.type] += transaction.amount;
-      categories[transaction.category].total += transaction.type === 'income' 
-        ? transaction.amount 
+      categories[transaction.category].total += transaction.type === 'income'
+        ? transaction.amount
         : -transaction.amount;
     });
     return categories;
