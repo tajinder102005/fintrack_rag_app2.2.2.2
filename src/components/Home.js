@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { api } from '../services/api';
 import './Home.css';
 
 const Home = () => {
@@ -11,6 +12,7 @@ const Home = () => {
   const aiInputRef = useRef(null);
   const [isSending, setIsSending] = useState(false);
   const [stats, setStats] = useState({ s1: 0, s2: 0, s3: 0 });
+  const [chatHistory, setChatHistory] = useState([]);
 
   // CURSOR & ANIMATIONS
   useEffect(() => {
@@ -140,29 +142,26 @@ const Home = () => {
     setIsSending(true);
     addTyping();
 
-    try {
-      // Note: In a real app, this should probably go through your own backend to hide the API key
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': 'YOUR_API_KEY_HERE_OR_USE_BACKEND' // The original HTML didn't have an actual key
-        },
-        body: JSON.stringify({
-          model: 'claude-3-sonnet-20240229',
-          max_tokens: 1000,
-          system: `You are FinTrack's expert AI financial advisor for Indian users. Give concise, practical, and personalized financial advice. Focus on Indian financial context.`,
-          messages: [{ role: 'user', content: text }]
-        })
-      });
+    const historyForApi = chatHistory;
 
-      const data = await res.json();
+    try {
+      const { reply } = await api.askAdvisorPublic({
+        message: text,
+        history: historyForApi
+      });
       removeTyping();
-      const reply = data.content?.[0]?.text || 'Sorry, I couldn\'t process that. Please try again.';
       addMsg('ai', reply.replace(/\n/g, '<br/>'));
+      setChatHistory(prev => [
+        ...prev,
+        { role: 'user', text },
+        { role: 'ai', text: reply }
+      ]);
     } catch (err) {
       removeTyping();
-      addMsg('ai', 'Oops — I had trouble connecting. Please try again in a moment. 🙏');
+      const hint = err.message?.includes('GEMINI')
+        ? 'Add GEMINI_API_KEY to your server .env (see GEMINI_SETUP.md).'
+        : 'Please try again in a moment.';
+      addMsg('ai', `Oops — I had trouble connecting. ${hint} 🙏`);
     }
     setIsSending(false);
     if (chatWindowRef.current) chatWindowRef.current.scrollTop = chatWindowRef.current.scrollHeight;

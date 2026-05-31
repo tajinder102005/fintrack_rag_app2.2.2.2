@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useData } from '../context/DataContext';
 import { FileText, Download, Calendar, Filter, BarChart3 } from 'lucide-react';
 import './ExportReports.css';
+import { formatINR } from '../utils/format';
 
 const ExportReports = () => {
   const { transactions, budgets } = useData();
@@ -291,16 +292,16 @@ const ExportReports = () => {
                 </div>
                 <div className="stat-card">
                   <span className="stat-label">Income</span>
-                  <span className="stat-value positive">${stats.totalIncome.toFixed(2)}</span>
+                  <span className="stat-value positive">{formatINR(stats.totalIncome)}</span>
                 </div>
                 <div className="stat-card">
                   <span className="stat-label">Expenses</span>
-                  <span className="stat-value negative">${stats.totalExpenses.toFixed(2)}</span>
+                  <span className="stat-value negative">{formatINR(stats.totalExpenses)}</span>
                 </div>
                 <div className="stat-card">
                   <span className="stat-label">Net Amount</span>
                   <span className={`stat-value ${stats.netAmount >= 0 ? 'positive' : 'negative'}`}>
-                    ${stats.netAmount.toFixed(2)}
+                    {formatINR(stats.netAmount)}
                   </span>
                 </div>
               </div>
@@ -324,7 +325,7 @@ const ExportReports = () => {
                         <span>{transaction.category}</span>
                         <span>{transaction.description}</span>
                         <span className={`amount ${transaction.type}`}>
-                          {transaction.type === 'income' ? '+' : '-'}${transaction.amount.toFixed(2)}
+                          {transaction.type === 'income' ? '+' : '-'}{formatINR(transaction.amount)}
                         </span>
                       </div>
                     ))}
@@ -345,11 +346,11 @@ const ExportReports = () => {
               </div>
               <div className="stat-card">
                 <span className="stat-label">Total Budget Amount</span>
-                <span className="stat-value">${budgets.reduce((sum, b) => sum + b.amount, 0).toFixed(2)}</span>
+                <span className="stat-value">{formatINR(budgets.reduce((sum, b) => sum + b.amount, 0))}</span>
               </div>
               <div className="stat-card">
                 <span className="stat-label">Total Spent</span>
-                <span className="stat-value">${budgets.reduce((sum, b) => sum + b.spent, 0).toFixed(2)}</span>
+                <span className="stat-value">{formatINR(budgets.reduce((sum, b) => sum + b.spent, 0))}</span>
               </div>
             </div>
           )}

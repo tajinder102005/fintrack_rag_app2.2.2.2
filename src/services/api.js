@@ -26,10 +26,12 @@ const apiRequest = async (url, options = {}) => {
 
   // Handle 401 Unauthorized (token expired)
   if (response.status === 401) {
-    localStorage.removeItem('fintrack_token');
-    localStorage.removeItem('fintrack_user');
-    window.location.href = '/login';
-    throw new Error('Session expired. Please login again.');
+    if (token) {
+      localStorage.removeItem('fintrack_token');
+      localStorage.removeItem('fintrack_user');
+      window.location.href = '/login';
+    }
+    throw new Error('Unauthorized');
   }
 
   let data;
@@ -137,5 +139,38 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(credentials),
     });
+  },
+
+  // AI advisor (Gemini via backend)
+  askAdvisor: async ({ message, history = [], context }) => {
+    return apiRequest('/ai/chat', {
+      method: 'POST',
+      body: JSON.stringify({ message, history, context }),
+    });
+  },
+
+  askAdvisorPublic: async ({ message, history = [] }) => {
+    const response = await fetch(`${API_BASE_URL}/ai/chat/public`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message, history }),
+    });
+
+    let data;
+    try {
+      data = await response.json();
+    } catch {
+      throw new Error('Invalid response from server');
+    }
+
+    if (!response.ok) {
+      throw new Error(data.message || 'AI request failed');
+    }
+
+    return data;
+  },
+
+  getAiStatus: async () => {
+    return apiRequest('/ai/status');
   },
 };

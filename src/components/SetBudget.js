@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useData } from '../context/DataContext';
 import { Target, Plus, Edit, Trash2, AlertTriangle, CheckCircle } from 'lucide-react';
 import './SetBudget.css';
+import { formatINR } from '../utils/format';
 
 const SetBudget = () => {
   const { budgets, addBudget, updateBudget, deleteBudget, transactions } = useData();
@@ -264,18 +265,18 @@ const SetBudget = () => {
                           <div className="budget-amounts">
                             <div className="amount-item">
                               <span className="amount-label">Budget</span>
-                              <span className="amount-value">${budget.amount.toFixed(2)}</span>
+                              <span className="amount-value">{formatINR(budget.amount)}</span>
                             </div>
                             <div className="amount-item">
                               <span className="amount-label">Spent</span>
                               <span className={`amount-value ${isOverBudget ? 'over-budget' : ''}`}>
-                                ${budget.spent.toFixed(2)}
+                                {formatINR(budget.spent)}
                               </span>
                             </div>
                             <div className="amount-item">
                               <span className="amount-label">Remaining</span>
                               <span className={`amount-value ${isOverBudget ? 'over-budget' : ''}`}>
-                                ${Math.max(0, budget.amount - budget.spent).toFixed(2)}
+                                {formatINR(Math.max(0, budget.amount - budget.spent))}
                               </span>
                             </div>
                           </div>

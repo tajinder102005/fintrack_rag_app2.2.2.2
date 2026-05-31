@@ -10,6 +10,7 @@ import {
   DollarSign
 } from 'lucide-react';
 import './AllTransactions.css';
+import { formatINR } from '../utils/format';
 
 const AllTransactions = () => {
   const { transactions, deleteTransaction } = useData();
@@ -102,16 +103,16 @@ const AllTransactions = () => {
           <div className="stat-item">
             <span className="stat-label">Total</span>
             <span className={`stat-value ${totalAmount >= 0 ? 'positive' : 'negative'}`}>
-              ${Math.abs(totalAmount).toFixed(2)}
+              {formatINR(Math.abs(totalAmount))}
             </span>
           </div>
           <div className="stat-item">
             <span className="stat-label">Income</span>
-            <span className="stat-value positive">${totalIncome.toFixed(2)}</span>
+            <span className="stat-value positive">{formatINR(totalIncome)}</span>
           </div>
           <div className="stat-item">
             <span className="stat-label">Expenses</span>
-            <span className="stat-value negative">${totalExpenses.toFixed(2)}</span>
+            <span className="stat-value negative">{formatINR(totalExpenses)}</span>
           </div>
         </div>
       </div>
@@ -219,7 +220,7 @@ const AllTransactions = () => {
 
                     <div className="col-amount">
                       <span className={`amount ${transaction.type}`}>
-                        {transaction.type === 'income' ? '+' : '-'}${transaction.amount.toFixed(2)}
+                        {transaction.type === 'income' ? '+' : '-'}{formatINR(transaction.amount)}
                       </span>
                     </div>
 

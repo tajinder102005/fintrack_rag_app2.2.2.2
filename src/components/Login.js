@@ -1,11 +1,18 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Eye, EyeOff, Mail, Lock, TrendingUp } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, Shield } from 'lucide-react';
+import { TAGLINE } from '../utils/format';
 import './Auth.css';
+
+const apiOrigin = (process.env.REACT_APP_API_URL || 'http://localhost:5000/api').replace(
+  /\/api\/?$/,
+  ''
+);
 
 const Login = () => {
   const { login } = useAuth();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -13,6 +20,15 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('error') === 'github') {
+      setError('GitHub sign-in failed. Try again or use email/password.');
+    } else if (params.get('error') === 'google') {
+      setError('Google sign-in failed. Try again or use email/password.');
+    }
+  }, []);
 
   const handleChange = (e) => {
     setFormData({
@@ -34,8 +50,10 @@ const Login = () => {
     }
 
     try {
-      const result = await login(formData.email, formData.password);
-      if (!result.success) {
+      const result = await login(formData.email.trim().toLowerCase(), formData.password);
+      if (result.success) {
+        navigate('/dashboard', { replace: true });
+      } else {
         setError(result.message || 'Invalid email or password');
       }
     } catch (err) {
@@ -48,13 +66,16 @@ const Login = () => {
   return (
     <div className="auth-container">
       <div className="auth-card">
+        <Link to="/" className="auth-back-link">← Back to Home</Link>
         <div className="auth-header">
           <div className="auth-logo">
-            <TrendingUp size={32} className="logo-icon" />
-            <h1>finTrack</h1>
+            <span className="auth-logo-mark">FT</span>
+            <h1>Fin<span>Track</span></h1>
           </div>
+          <p className="auth-tagline">{TAGLINE}</p>
           <h2>Welcome Back</h2>
-          <p>Sign in to your account to continue</p>
+          <p>Sign in to track every rupee</p>
+          <p className="auth-trust"><Shield size={12} /> Bank-grade encryption · Your data stays yours</p>
         </div>
 
         <form onSubmit={handleSubmit} className="auth-form">
@@ -115,11 +136,14 @@ const Login = () => {
         <div className="auth-separator">OR</div>
 
         <div className="social-auth">
-          <a href="http://localhost:5000/api/auth/google" className="btn-social btn-google" onClick={(e) => { e.preventDefault(); alert('Google OAuth not configured yet. Please use email/password login.'); }}>
+          <a
+            href={`${apiOrigin}/api/auth/google`}
+            className="btn-social btn-google"
+          >
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
             Continue with Google
           </a>
-          <a href="http://localhost:5000/api/auth/github" className="btn-social btn-github" onClick={(e) => { e.preventDefault(); alert('GitHub OAuth not configured yet. Please use email/password login.'); }}>
+          <a href={`${apiOrigin}/api/auth/github`} className="btn-social btn-github">
             <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub" style={{ filter: 'invert(1)', width: '20px' }} />
             Continue with GitHub
           </a>

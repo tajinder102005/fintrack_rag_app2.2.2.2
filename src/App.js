@@ -9,43 +9,81 @@ import SetBudget from './components/SetBudget';
 import ExportReports from './components/ExportReports';
 import Notifications from './components/Notifications';
 import Layout from './components/Layout';
+import Home from './components/Home';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { DataProvider } from './context/DataContext';
 
-import Home from './components/Home';
+function LoadingScreen() {
+  return (
+    <div style={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      height: '100vh',
+      color: '#00ffe0',
+      background: '#04080f',
+      fontFamily: "'Inter', sans-serif"
+    }}>
+      Loading...
+    </div>
+  );
+}
 
-function AppRoutes() {
+function ProtectedRoute({ children }) {
   const { loading, isAuthenticated } = useAuth();
 
-  if (loading) {
-    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', color: '#00ffe0' }}>Loading...</div>;
-  }
+  if (loading) return <LoadingScreen />;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  return children;
+}
 
-  if (isAuthenticated) {
-    return (
-      <Layout>
-        <Routes>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="/login" element={<Navigate to="/dashboard" replace />} />
-          <Route path="/register" element={<Navigate to="/dashboard" replace />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/add-transaction" element={<AddTransaction />} />
-          <Route path="/transactions" element={<AllTransactions />} />
-          <Route path="/budget" element={<SetBudget />} />
-          <Route path="/reports" element={<ExportReports />} />
-          <Route path="/notifications" element={<Notifications />} />
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
-        </Routes>
-      </Layout>
-    );
-  }
+function PublicRoute({ children }) {
+  const { loading, isAuthenticated } = useAuth();
 
+  if (loading) return <LoadingScreen />;
+  if (isAuthenticated) return <Navigate to="/dashboard" replace />;
+  return children;
+}
+
+function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="*" element={<Home />} />
+      <Route path="/" element={<PublicRoute><Home /></PublicRoute>} />
+      <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+      <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+
+      <Route path="/dashboard" element={
+        <ProtectedRoute>
+          <Layout><Dashboard /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/add-transaction" element={
+        <ProtectedRoute>
+          <Layout><AddTransaction /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/transactions" element={
+        <ProtectedRoute>
+          <Layout><AllTransactions /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/budget" element={
+        <ProtectedRoute>
+          <Layout><SetBudget /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/reports" element={
+        <ProtectedRoute>
+          <Layout><ExportReports /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/notifications" element={
+        <ProtectedRoute>
+          <Layout><Notifications /></Layout>
+        </ProtectedRoute>
+      } />
+
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

@@ -79,12 +79,14 @@ const transactionRoutes = require('./server/routes/transactions');
 const budgetRoutes = require('./server/routes/budgets');
 const notificationRoutes = require('./server/routes/notifications');
 const authRoutes = require('./server/routes/auth');
+const aiRoutes = require('./server/routes/ai');
 
 // Routes
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/budgets', budgetRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/ai', aiRoutes);
 
 // Handle React Router reloads by serving index.html for non-API GET requests
 app.use((req, res, next) => {
@@ -110,16 +112,74 @@ const redactedUri = connectionString.replace(
 );
 console.log('Connecting to MongoDB:', redactedUri);
 
-mongoose
-  .connect(connectionString)
-  .then(() => {
-    console.log('Connected. Database:', mongoose.connection.db?.databaseName);
-  })
-  .catch((error) => {
-    console.error('MongoDB connection failed:', error.message);
-    console.log('Check: Atlas cluster / Network Access IP allowlist / credentials / DB name in the URI.');
-  });
+mongoose.set('bufferCommands', false);
 
-server.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+let authStorage = 'pending';
+
+async function connectDatabase() {
+  try {
+    await mongoose.connect(connectionString, { serverSelectionTimeoutMS: 10000 });
+    console.log('Connected. Database:', mongoose.connection.db?.databaseName);
+    authStorage = 'mongodb';
+    await seedDemoUser();
+    return;
+  } catch (error) {
+    console.error('MongoDB Atlas connection failed:', error.message);
+  }
+
+  const localUri = 'mongodb://127.0.0.1:27017/fintrackDB';
+  if (connectionString !== localUri) {
+    console.log('Retrying with local MongoDB:', localUri);
+    try {
+      await mongoose.connect(localUri, { serverSelectionTimeoutMS: 5000 });
+      console.log('Connected to local MongoDB.');
+      authStorage = 'mongodb';
+      await seedDemoUser();
+      return;
+    } catch (localError) {
+      console.error('Local MongoDB also failed:', localError.message);
+    }
+  }
+
+  const { initMemoryStore } = require('./server/store/memoryUsers');
+  await initMemoryStore();
+  authStorage = 'memory';
+  console.warn('WARNING: Using in-memory auth only. Accounts are LOST when the server restarts.');
+  console.warn('Fix MONGODB_URI in .env so sign-ups are saved to Atlas.');
+}
+
+async function seedDemoUser() {
+  const User = require('./server/models/User');
+  const demoEmail = 'demo@fintrack.com';
+  const existingDemo = await User.findOne({ email: demoEmail });
+  if (!existingDemo) {
+    await User.create({
+      name: 'Demo User',
+      email: demoEmail,
+      password: 'demo123'
+    });
+    console.log('Demo user created: demo@fintrack.com / demo123');
+  }
+}
+
+async function startServer() {
+  await connectDatabase();
+
+  server.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+    console.log(`Auth storage: ${authStorage}`);
+    if (authStorage === 'mongodb') {
+      console.log('Email/password accounts are saved in MongoDB Atlas.');
+    }
+    if (process.env.GEMINI_API_KEY?.trim()) {
+      console.log('AI advisor: Gemini enabled');
+    } else {
+      console.warn('GEMINI_API_KEY not set — AI coach uses offline fallback. See GEMINI_SETUP.md');
+    }
+  });
+}
+
+startServer().catch((err) => {
+  console.error('Failed to start server:', err);
+  process.exit(1);
 });

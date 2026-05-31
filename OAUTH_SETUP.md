@@ -41,8 +41,8 @@ GOOGLE_CLIENT_SECRET=your_google_client_secret_here
 GITHUB_CLIENT_ID=your_github_client_id_here
 GITHUB_CLIENT_SECRET=your_github_client_secret_here
 
-# Existing variables
-MONGODB_URI=mongodb+srv://tajindertiger_db_user:Singh%40123@fintrackcluster.gy6se5u.mongodb.net/fintrackDB
+# Existing variables (see MONGODB_ATLAS_SETUP.md for MongoDB URI)
+MONGODB_URI=mongodb+srv://YOUR_USERNAME:YOUR_ENCODED_PASSWORD@YOUR_CLUSTER.mongodb.net/fintrackDB?retryWrites=true&w=majority
 JWT_SECRET=fintrack_jwt_secret_key_2024_secure
 PORT=5000
 NODE_ENV=development

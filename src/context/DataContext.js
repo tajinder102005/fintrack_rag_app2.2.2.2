@@ -92,10 +92,16 @@ export const DataProvider = ({ children }) => {
     }
   }, [user]);
 
-  // Load data from API on mount
+  // Load data from API when user is authenticated
   useEffect(() => {
-    loadData();
-  }, []);
+    if (user) {
+      loadData();
+    } else {
+      setTransactions([]);
+      setBudgets([]);
+      setNotifications([]);
+    }
+  }, [user]);
 
   const loadData = async () => {
     try {
@@ -105,80 +111,8 @@ export const DataProvider = ({ children }) => {
         api.getNotifications()
       ]);
 
-      if (transactionsData.length === 0) {
-        // Initialize with sample data
-        const sampleTransactions = [
-          {
-            type: 'expense',
-            amount: 85.50,
-            category: 'Food',
-            description: 'Groceries',
-            date: new Date().toISOString().split('T')[0],
-            createdAt: new Date().toISOString()
-          },
-          {
-            type: 'income',
-            amount: 2500.00,
-            category: 'Income',
-            description: 'Salary',
-            date: new Date().toISOString().split('T')[0],
-            createdAt: new Date().toISOString()
-          },
-          {
-            type: 'expense',
-            amount: 15.99,
-            category: 'Entertainment',
-            description: 'Online Subscription',
-            date: new Date().toISOString().split('T')[0],
-            createdAt: new Date().toISOString()
-          },
-          {
-            type: 'expense',
-            amount: 5.25,
-            category: 'Food',
-            description: 'Coffee Shop',
-            date: new Date().toISOString().split('T')[0],
-            createdAt: new Date().toISOString()
-          }
-        ];
-
-        // Create sample transactions in database
-        for (const transaction of sampleTransactions) {
-          await api.createTransaction(transaction);
-        }
-        setTransactions(sampleTransactions);
-      } else {
-        setTransactions(transactionsData);
-      }
-
-      if (budgetsData.length === 0) {
-        // Initialize with sample budget
-        const sampleBudgets = [
-          {
-            category: 'Food',
-            amount: 500,
-            spent: 90.75,
-            month: new Date().getMonth() + 1,
-            year: new Date().getFullYear()
-          },
-          {
-            category: 'Entertainment',
-            amount: 200,
-            spent: 15.99,
-            month: new Date().getMonth() + 1,
-            year: new Date().getFullYear()
-          }
-        ];
-
-        // Create sample budgets in database
-        for (const budget of sampleBudgets) {
-          await api.createBudget(budget);
-        }
-        setBudgets(sampleBudgets);
-      } else {
-        setBudgets(budgetsData);
-      }
-
+      setTransactions(transactionsData);
+      setBudgets(budgetsData);
       setNotifications(notificationsData);
     } catch (error) {
       console.error('Error loading data:', error);

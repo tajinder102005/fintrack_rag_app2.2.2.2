@@ -1,0 +1,235 @@
+.ai-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #00ffe0, #0091ff);
+  color: #04080f;
+  border: none;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: 0 8px 32px rgba(0, 255, 224, 0.35);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.ai-fab:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(0, 255, 224, 0.45);
+}
+
+.ai-fab-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.ai-panel {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 901;
+  width: 380px;
+  max-width: calc(100vw - 32px);
+  height: 520px;
+  max-height: calc(100vh - 48px);
+  background: rgba(8, 14, 26, 0.98);
+  border: 1px solid rgba(0, 255, 224, 0.2);
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(20px);
+  animation: aiSlideUp 0.25s ease;
+}
+
+@keyframes aiSlideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.ai-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 16px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.ai-panel-header h3 {
+  margin: 0;
+  font-family: 'Space Grotesk', sans-serif;
+  color: #e8f4ff;
+  font-size: 16px;
+}
+
+.ai-panel-header p {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #7a9bb5;
+}
+
+.ai-close {
+  background: rgba(255, 255, 255, 0.06);
+  border: none;
+  color: #7a9bb5;
+  border-radius: 8px;
+  padding: 6px;
+  cursor: pointer;
+}
+
+.ai-close:hover {
+  color: #00ffe0;
+  background: rgba(0, 255, 224, 0.1);
+}
+
+.ai-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.ai-chip {
+  background: rgba(0, 255, 224, 0.08);
+  border: 1px solid rgba(0, 255, 224, 0.2);
+  color: #00ffe0;
+  font-size: 11px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.ai-chip:hover {
+  background: rgba(0, 255, 224, 0.15);
+}
+
+.ai-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ai-msg {
+  display: flex;
+}
+
+.ai-msg.user {
+  justify-content: flex-end;
+}
+
+.ai-msg-bubble {
+  max-width: 88%;
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.ai-msg.ai .ai-msg-bubble {
+  background: rgba(17, 28, 48, 0.9);
+  color: #c8dce8;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.ai-msg.user .ai-msg-bubble {
+  background: linear-gradient(135deg, rgba(0, 255, 224, 0.2), rgba(0, 145, 255, 0.2));
+  color: #e8f4ff;
+  border: 1px solid rgba(0, 255, 224, 0.25);
+}
+
+.ai-input-row {
+  display: flex;
+  gap: 8px;
+  padding: 12px 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.ai-input-row input {
+  flex: 1;
+  background: rgba(4, 8, 15, 0.8);
+  border: 1px solid rgba(0, 255, 224, 0.15);
+  border-radius: 10px;
+  padding: 10px 14px;
+  color: #e8f4ff;
+  font-size: 13px;
+}
+
+.ai-input-row input:focus {
+  outline: none;
+  border-color: #00ffe0;
+}
+
+.ai-input-row input::placeholder {
+  color: #2e4a65;
+}
+
+.ai-input-row button {
+  background: #00ffe0;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  color: #04080f;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.ai-input-row button:disabled,
+.ai-chip:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ai-typing {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  min-height: 20px;
+}
+
+.ai-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #00ffe0;
+  animation: aiBounce 1.2s ease-in-out infinite;
+}
+
+.ai-dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.ai-dot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes aiBounce {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+  40% { transform: translateY(-5px); opacity: 1; }
+}
+
+@media (max-width: 480px) {
+  .ai-panel {
+    bottom: 0;
+    right: 0;
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    max-height: 100%;
+    border-radius: 0;
+  }
+
+  .ai-fab span {
+    display: none;
+  }
+}
