@@ -27,3 +27,4 @@ npm run dev
 - Password: demo123
 
 See GEMINI_SETUP.md and MONGODB_ATLAS_SETUP.md for configuration details.
+# fintrack_rag_app2.2.2.2
