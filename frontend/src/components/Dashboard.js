@@ -139,7 +139,7 @@ const Dashboard = () => {
           <h3>Spending Trends</h3>
           <div className="chart-container">
             {transactions.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={chartData} margin={{ top: 10, right: 30, left: 10, bottom: 20 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
                   <XAxis dataKey="date" stroke="#7a9bb5" fontSize={12} tickMargin={10} />
@@ -172,7 +172,7 @@ const Dashboard = () => {
           <h3>Expenses by Category</h3>
           <div className="chart-container">
             {categoryData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height="100%">
                 <PieChart margin={{ top: 20, right: 30, left: 30, bottom: 20 }}>
                   <Pie
                     data={categoryData}
