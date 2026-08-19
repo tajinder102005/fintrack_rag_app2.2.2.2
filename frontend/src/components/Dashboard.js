@@ -8,7 +8,8 @@ import {
   TrendingDown,
   ArrowUpRight,
   ArrowDownRight,
-  PiggyBank
+  PiggyBank,
+  Plus
 } from 'lucide-react';
 import {
   LineChart,
@@ -27,22 +28,7 @@ import './Dashboard.css';
 
 // Money pulse removed as requested
 
-const CustomLegend = ({ data, formatINR }) => {
-  return (
-    <div className="custom-legend">
-      {data.map((entry, index) => (
-        <div key={index} className="legend-item">
-          <div className="legend-color" style={{ 
-            backgroundColor: ['#00ffe0', '#0091ff', '#ffd166', '#ff4f70', '#8b5cf6', '#06b6d4'][index % 6] 
-          }} />
-          <span className="legend-text">
-            {entry.name}: {formatINR(entry.value)}
-          </span>
-        </div>
-      ))}
-    </div>
-  );
-};
+
 
 const Dashboard = () => {
   const {
@@ -131,7 +117,12 @@ const Dashboard = () => {
 
         <div className="stat-card quick-add fade-in" style={{ animationDelay: '0.15s' }}>
           <div className="stat-content quick-add-content">
-            <h3>Quick Add</h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+              <h3 style={{ margin: 0 }}>Quick Add</h3>
+              <Link to="/add-transaction" className="view-all-link" style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px' }}>
+                <Plus size={14} /> Add
+              </Link>
+            </div>
             <div className="quick-add-tags">
               <Link to="/add-transaction?category=Food&desc=Groceries" className="quick-add-tag">Groceries</Link>
               <Link to="/add-transaction?category=Transportation&desc=Gas" className="quick-add-tag">Gas</Link>
@@ -148,10 +139,10 @@ const Dashboard = () => {
           <div className="chart-container">
             {transactions.length > 0 ? (
               <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={chartData}>
+                <LineChart data={chartData} margin={{ top: 10, right: 10, left: 30, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-                  <XAxis dataKey="date" stroke="#7a9bb5" fontSize={12} />
-                  <YAxis stroke="#7a9bb5" fontSize={12} tickFormatter={formatINRChart} />
+                  <XAxis dataKey="date" stroke="#7a9bb5" fontSize={12} tickMargin={10} />
+                  <YAxis stroke="#7a9bb5" fontSize={12} tickFormatter={formatINRChart} width={65} />
                   <Tooltip
                     formatter={(value) => formatINR(value)}
                     contentStyle={{
@@ -186,7 +177,8 @@ const Dashboard = () => {
                     data={categoryData}
                     cx="50%"
                     cy="50%"
-                    labelLine={false}
+                    labelLine={true}
+                    label={({ name, value }) => `${name}: ${formatINR(value)}`}
                     outerRadius={80}
                     innerRadius={0}
                     dataKey="value"
@@ -195,12 +187,6 @@ const Dashboard = () => {
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Legend 
-                    verticalAlign="bottom" 
-                    height={36}
-                    iconType="circle"
-                    content={<CustomLegend data={categoryData} formatINR={formatINR} />}
-                  />
                   <Tooltip
                     formatter={(value) => formatINR(value)}
                     contentStyle={{

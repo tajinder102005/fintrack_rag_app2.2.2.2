@@ -92,7 +92,7 @@ const Layout = ({ children }) => {
         </div>
       </div>
 
-      <div className="sidebar-overlay" onClick={toggleSidebar}></div>
+      <div className={`sidebar-overlay ${sidebarOpen ? 'open' : ''}`} onClick={toggleSidebar}></div>
 
       <div className="main-content">
         <header className="header">
