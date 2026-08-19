@@ -21,8 +21,7 @@ import {
   ResponsiveContainer,
   PieChart,
   Pie,
-  Cell,
-  Legend
+  Cell
 } from 'recharts';
 import './Dashboard.css';
 
