@@ -138,7 +138,7 @@ const Dashboard = () => {
           <div className="chart-container">
             {transactions.length > 0 ? (
               <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={chartData} margin={{ top: 10, right: 10, left: 30, bottom: 0 }}>
+                <LineChart data={chartData} margin={{ top: 10, right: 10, left: 30, bottom: 20 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
                   <XAxis dataKey="date" stroke="#7a9bb5" fontSize={12} tickMargin={10} />
                   <YAxis stroke="#7a9bb5" fontSize={12} tickFormatter={formatINRChart} width={65} />
@@ -171,7 +171,7 @@ const Dashboard = () => {
           <div className="chart-container">
             {categoryData.length > 0 ? (
               <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
+                <PieChart margin={{ top: 20, right: 30, left: 30, bottom: 20 }}>
                   <Pie
                     data={categoryData}
                     cx="50%"
