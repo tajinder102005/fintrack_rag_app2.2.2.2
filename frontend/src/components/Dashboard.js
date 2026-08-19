@@ -76,6 +76,8 @@ const Dashboard = () => {
 
   const COLORS = ['#00ffe0', '#0091ff', '#ffd166', '#ff4f70', '#8b5cf6', '#06b6d4'];
 
+  const categoryTotals = getTransactionsByCategory();
+
   const currentMonth = new Date().getMonth() + 1;
   const currentYear = new Date().getFullYear();
   const currentBudgets = budgets.filter(b => b.month === currentMonth && b.year === currentYear);
@@ -152,8 +154,8 @@ const Dashboard = () => {
                     itemStyle={{ color: '#ffffff' }}
                     labelStyle={{ color: '#ffffff' }}
                   />
-                  <Line type="monotone" dataKey="income" stroke="#00ffe0" strokeWidth={2} name="Income" />
-                  <Line type="monotone" dataKey="expenses" stroke="#ff4f70" strokeWidth={2} name="Expenses" />
+                  <Line type="linear" dataKey="income" stroke="#00ffe0" strokeWidth={2} name="Income" />
+                  <Line type="linear" dataKey="expenses" stroke="#ff4f70" strokeWidth={2} name="Expenses" />
                 </LineChart>
               </ResponsiveContainer>
             ) : (
@@ -176,8 +178,6 @@ const Dashboard = () => {
                     data={categoryData}
                     cx="50%"
                     cy="50%"
-                    labelLine={true}
-                    label={({ name, value }) => `${name}: ${formatINR(value)}`}
                     outerRadius={80}
                     innerRadius={0}
                     dataKey="value"
@@ -216,7 +216,8 @@ const Dashboard = () => {
           <div className="budget-list">
             {currentBudgets.length > 0 ? (
               currentBudgets.map(budget => {
-                const percentage = budget.amount > 0 ? ((budget.spent || 0) / budget.amount) * 100 : 0;
+                const spent = categoryTotals[budget.category]?.expense || 0;
+                const percentage = budget.amount > 0 ? (spent / budget.amount) * 100 : 0;
                 const isOverBudget = percentage > 100;
                 const key = budget._id || budget.id || budget.category;
 
@@ -225,7 +226,7 @@ const Dashboard = () => {
                     <div className="budget-info">
                       <span className="budget-category">{budget.category}</span>
                       <span className="budget-amount">
-                        {formatINR(budget.spent || 0)} / {formatINR(budget.amount)}
+                        {formatINR(spent)} / {formatINR(budget.amount)}
                       </span>
                     </div>
                     <div className="budget-progress-bar">

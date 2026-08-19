@@ -243,7 +243,9 @@ export const DataProvider = ({ children }) => {
     );
 
     if (budget) {
-      const newSpent = budget.spent + amount;
+      const categoryTotals = getTransactionsByCategory();
+      const currentSpent = categoryTotals[category]?.expense || 0;
+      const newSpent = currentSpent + amount;
       const percentage = (newSpent / budget.amount) * 100;
 
       try {
