@@ -517,6 +517,19 @@
   .user-name {
     display: none;
   }
+
+  .theme-btn span {
+    display: none;
+  }
+  
+  .theme-switcher {
+    margin-right: 8px;
+    gap: 0;
+  }
+  
+  .theme-btn {
+    padding: 6px;
+  }
 }
 
 @media (max-width: 640px) {
