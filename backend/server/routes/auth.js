@@ -4,6 +4,7 @@ const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
 const { authMiddleware } = require('../middleware/auth');
 const crypto = require('crypto');
+const passport = require('passport');
 
 const router = express.Router();
 
@@ -417,5 +418,59 @@ router.post('/refresh', authMiddleware, async (req, res) => {
     });
   }
 });
+
+/**
+ * @route   GET /api/auth/google
+ * @desc    Initiate Google OAuth login
+ * @access  Public
+ */
+router.get('/google', passport.authenticate('google', { 
+  scope: ['profile', 'email'],
+  session: false
+}));
+
+/**
+ * @route   GET /api/auth/google/callback
+ * @desc    Google OAuth callback
+ * @access  Public
+ */
+router.get('/google/callback', 
+  passport.authenticate('google', { session: false, failureRedirect: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/login?error=auth_failed` }),
+  (req, res) => {
+    // Generate JWT token
+    const token = generateToken(req.user._id, req.user.email);
+    
+    // Redirect to frontend with token
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    res.redirect(`${frontendUrl}/auth/callback?token=${token}`);
+  }
+);
+
+/**
+ * @route   GET /api/auth/github
+ * @desc    Initiate GitHub OAuth login
+ * @access  Public
+ */
+router.get('/github', passport.authenticate('github', { 
+  scope: ['user:email'],
+  session: false
+}));
+
+/**
+ * @route   GET /api/auth/github/callback
+ * @desc    GitHub OAuth callback
+ * @access  Public
+ */
+router.get('/github/callback', 
+  passport.authenticate('github', { session: false, failureRedirect: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/login?error=auth_failed` }),
+  (req, res) => {
+    // Generate JWT token
+    const token = generateToken(req.user._id, req.user.email);
+    
+    // Redirect to frontend with token
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    res.redirect(`${frontendUrl}/auth/callback?token=${token}`);
+  }
+);
 
 module.exports = router;

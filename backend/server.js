@@ -81,6 +81,11 @@ app.use(compression());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Initialize Passport
+const passport = require('passport');
+require('./server/config/passport');
+app.use(passport.initialize());
+
 // Socket.io connection handling
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);

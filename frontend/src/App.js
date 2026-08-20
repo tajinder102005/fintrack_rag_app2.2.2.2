@@ -13,6 +13,7 @@ import Home from './components/Home';
 import ErrorBoundary from './components/ErrorBoundary';
 import AdminKnowledgeBase from './components/AdminKnowledgeBase';
 import Profile from './components/Profile';
+import AuthCallback from './components/AuthCallback';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { DataProvider } from './context/DataContext';
 import { ThemeProvider } from './context/ThemeContext';
@@ -55,6 +56,7 @@ function AppRoutes() {
       <Route path="/" element={<PublicRoute><Home /></PublicRoute>} />
       <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
       <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+      <Route path="/auth/callback" element={<AuthCallback />} />
 
       <Route path="/dashboard" element={
         <ProtectedRoute>

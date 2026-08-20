@@ -76,6 +76,25 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const loginWithToken = async (token) => {
+    try {
+      localStorage.setItem('fintrack_token', token);
+      const response = await api.getProfile();
+      
+      if (response && response.user) {
+        setUser(response.user);
+        setIsAuthenticated(true);
+        localStorage.setItem('fintrack_user', JSON.stringify(response.user));
+        return { success: true };
+      }
+      return { success: false, message: 'Invalid token' };
+    } catch (error) {
+      console.error('Token login error:', error);
+      localStorage.removeItem('fintrack_token');
+      return { success: false, message: 'Failed to authenticate with token' };
+    }
+  };
+
   const register = async (name, email, password) => {
     try {
       const response = await api.register({ name, email, password });
@@ -110,6 +129,7 @@ export const AuthProvider = ({ children }) => {
     isAuthenticated,
     user,
     login,
+    loginWithToken,
     register,
     logout,
     loading
