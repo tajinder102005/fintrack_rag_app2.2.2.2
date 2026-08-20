@@ -141,6 +141,17 @@ export const api = {
     });
   },
 
+  getProfile: async () => {
+    return apiRequest('/auth/me');
+  },
+
+  updateProfile: async (payload) => {
+    return apiRequest('/auth/profile', {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    });
+  },
+
   // AI advisor (Gemini via backend)
   askAdvisor: async ({ message, history = [], context }) => {
     return apiRequest('/ai/chat', {

@@ -21,6 +21,12 @@ export function buildFinanceContext(data, userName) {
     .slice(0, 6)
     .map(([name, d]) => ({ name, expense: d.expense }));
 
+  const topIncomeCategories = Object.entries(categories)
+    .filter(([, d]) => d.income > 0)
+    .sort((a, b) => b[1].income - a[1].income)
+    .slice(0, 6)
+    .map(([name, d]) => ({ name, income: d.income }));
+
   return {
     userName: userName || 'User',
     balance,
@@ -29,6 +35,7 @@ export function buildFinanceContext(data, userName) {
     savingsRate: income > 0 ? ((income - expenses) / income) * 100 : 0,
     transactionCount: transactions.length,
     topCategories,
+    topIncomeCategories,
     budgets: monthBudgets.map(b => ({
       category: b.category,
       limit: b.amount,

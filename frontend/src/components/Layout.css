@@ -362,26 +362,25 @@
   padding: 12px 16px;
 }
 
-.profile-detail {
+.profile-link-btn {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 10px;
-  padding: 8px 0;
-  color: var(--ft-text-muted);
-}
-
-.profile-detail .label {
-  display: block;
-  font-size: 11px;
-  color: var(--ft-text-dim);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.profile-detail .value {
-  display: block;
-  font-size: 13px;
+  width: 100%;
+  padding: 10px;
   color: var(--ft-text);
+  background: var(--ft-surface2);
+  border: 1px solid var(--ft-border);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.profile-link-btn:hover {
+  background: var(--ft-accent-glow);
+  color: var(--ft-accent);
+  border-color: var(--ft-accent);
 }
 
 .profile-dropdown-footer {

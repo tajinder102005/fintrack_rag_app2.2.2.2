@@ -1,31 +1,46 @@
-const DEFAULT_MODEL = 'gemini-1.5-flash';
+const DEFAULT_MODEL = 'qwen/qwen3.6-27b';
 const FALLBACK_MODELS = [
-  'gemini-1.5-flash',
-  'gemini-flash-latest',
-  'gemini-1.5-flash-8b'
+  'qwen/qwen3.6-27b',
+  'openai/gpt-oss-20b',
+  'groq/compound-mini'
 ];
 
 function getApiKey() {
-  return process.env.GEMINI_API_KEY?.trim() || '';
+  return process.env.GROQ_API_KEY?.trim() || '';
 }
 
 function getModel() {
-  return process.env.GEMINI_MODEL?.trim() || DEFAULT_MODEL;
+  return process.env.GROQ_MODEL?.trim() || DEFAULT_MODEL;
 }
 
 function isConfigured() {
   return Boolean(getApiKey());
 }
 
-function isQuotaError(status, message = '') {
-  return status === 429 || /quota|rate.?limit|resource exhausted/i.test(message);
+function shouldFallback(status, message = '') {
+  // Fallback if quota exceeded (429), server error (5xx), or model not found (404)
+  return status === 429 || status === 404 || status >= 500 || /quota|rate.?limit/i.test(message);
 }
 
-async function callModel(model, apiKey, body) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-  const response = await fetch(url, {
+async function callModel(model, apiKey, systemPrompt, contents) {
+  const messages = [
+    { role: 'system', content: systemPrompt },
+    ...contents
+  ];
+
+  const body = {
+    model: model,
+    messages: messages,
+    temperature: 0.65,
+    max_tokens: 1200
+  };
+
+  const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
     body: JSON.stringify(body)
   });
 
@@ -33,23 +48,25 @@ async function callModel(model, apiKey, body) {
   try {
     data = await response.json();
   } catch {
-    throw new Error('Invalid response from Gemini API');
+    throw new Error('Invalid response from Groq API');
   }
 
   if (!response.ok) {
-    const message = data?.error?.message || `Gemini API error (${response.status})`;
+    const message = data?.error?.message || `Groq API error (${response.status})`;
     const err = new Error(message);
     err.status = response.status;
-    err.isQuota = isQuotaError(response.status, message);
+    err.shouldFallback = shouldFallback(response.status, message);
     throw err;
   }
 
-  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+  const text = data?.choices?.[0]?.message?.content;
   if (!text?.trim()) {
-    throw new Error('Empty response from Gemini');
+    throw new Error('Empty response from Groq');
   }
 
-  return text.trim();
+  // Remove <think> blocks (often produced by reasoning models like Qwen)
+  let cleanText = text.replace(/<think>[\s\S]*?<\/think>/g, '');
+  return cleanText.trim();
 }
 
 /**
@@ -58,19 +75,16 @@ async function callModel(model, apiKey, body) {
 async function generateReply({ systemPrompt, contents }) {
   const apiKey = getApiKey();
   if (!apiKey) {
-    const err = new Error('Gemini API key is not configured');
-    err.code = 'GEMINI_NOT_CONFIGURED';
+    const err = new Error('Groq API key is not configured');
+    err.code = 'GROQ_NOT_CONFIGURED';
     throw err;
   }
 
-  const body = {
-    systemInstruction: { parts: [{ text: systemPrompt }] },
-    contents,
-    generationConfig: {
-      temperature: 0.65,
-      maxOutputTokens: 1200
-    }
-  };
+  // Convert Gemini's parts array format to OpenAI's standard string format
+  const formattedContents = contents.map(m => ({
+    role: m.role === 'model' ? 'assistant' : 'user',
+    content: m.parts[0].text
+  }));
 
   const preferred = getModel();
   const modelsToTry = [...new Set([preferred, ...FALLBACK_MODELS])];
@@ -78,18 +92,18 @@ async function generateReply({ systemPrompt, contents }) {
 
   for (const model of modelsToTry) {
     try {
-      return await callModel(model, apiKey, body);
+      return await callModel(model, apiKey, systemPrompt, formattedContents);
     } catch (error) {
       lastError = error;
-      if (error.isQuota) {
-        console.warn(`Gemini model ${model} quota exceeded, trying next...`);
+      if (error.shouldFallback) {
+        console.warn(`Groq model ${model} failed, trying next...`);
         continue;
       }
       throw error;
     }
   }
 
-  throw lastError || new Error('All Gemini models failed');
+  throw lastError || new Error('All Groq models failed');
 }
 
 /** @param {Array<{ role: 'user'|'ai', text: string }>} history */

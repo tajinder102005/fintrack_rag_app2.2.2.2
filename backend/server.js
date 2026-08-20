@@ -58,12 +58,6 @@ const authLimiter = rateLimit({
   }
 });
 
-app.use('/api/', limiter);
-app.use('/api/auth/', authLimiter);
-
-// Compression
-app.use(compression());
-
 // CORS (Enhanced configuration to fix "Failed to fetch")
 app.use(cors({
   origin: [
@@ -77,6 +71,11 @@ app.use(cors({
   preflightContinue: false,
   optionsSuccessStatus: 204
 }));
+
+app.use('/api/', limiter);
+app.use('/api/auth/register', authLimiter);
+app.use('/api/auth/login', authLimiter);
+app.use(compression());
 
 // Body parsing
 app.use(express.json({ limit: '10mb' }));
@@ -112,12 +111,16 @@ const authRoutes = require('./server/routes/auth');
 const transactionRoutes = require('./server/routes/transactions');
 const budgetRoutes = require('./server/routes/budgets');
 const notificationRoutes = require('./server/routes/notifications');
+const knowledgeRoutes = require('./server/routes/knowledge');
+const aiRoutes = require('./server/routes/ai');
 
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/budgets', budgetRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/knowledge', knowledgeRoutes);
+app.use('/api/ai', aiRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

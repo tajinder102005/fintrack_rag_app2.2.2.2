@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send } from 'lucide-react';
+import { Bot, Sparkles, X, Send } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { api } from '../services/api';
@@ -53,12 +53,12 @@ const AIAdvisor = () => {
         data,
         user?.name?.split(' ')[0] || 'there'
       );
-      const { reply } = await api.askAdvisor({
+      const { reply, citations } = await api.askAdvisor({
         message: question,
         history,
         context
       });
-      setMessages(prev => [...prev, { role: 'ai', text: reply }]);
+      setMessages(prev => [...prev, { role: 'ai', text: reply, citations }]);
     } catch (err) {
       const fallback = getFallbackReply(question);
       const note =
@@ -84,6 +84,11 @@ const AIAdvisor = () => {
       </span>
     ));
 
+  // Check if AI is disabled in profile
+  if (user?.aiPreferences?.aiCoachEnabled === false) {
+    return null;
+  }
+
   return (
     <>
       <button
@@ -92,7 +97,8 @@ const AIAdvisor = () => {
         onClick={() => setOpen(true)}
         aria-label="Open AI advisor"
       >
-        <MessageCircle size={22} />
+        <Sparkles size={20} className="ai-fab-icon-secondary" />
+        <Bot size={22} className="ai-fab-icon-primary" />
         <span>AI Coach</span>
       </button>
 
@@ -101,7 +107,6 @@ const AIAdvisor = () => {
           <div className="ai-panel-header">
             <div>
               <h3>🧠 FinTrack AI</h3>
-              <p>Gemini · Money coach for India · ₹</p>
             </div>
             <button type="button" className="ai-close" onClick={() => setOpen(false)}>
               <X size={20} />
@@ -125,7 +130,19 @@ const AIAdvisor = () => {
           <div className="ai-messages" ref={chatRef}>
             {messages.map((msg, i) => (
               <div key={i} className={`ai-msg ${msg.role}`}>
-                <div className="ai-msg-bubble">{renderText(msg.text)}</div>
+                <div className="ai-msg-bubble">
+                  {renderText(msg.text)}
+                  {msg.citations && msg.citations.length > 0 && (
+                    <div className="ai-citations">
+                      <div className="ai-citations-title">📚 Sources:</div>
+                      {msg.citations.map((c, idx) => (
+                        <div key={idx} className="ai-citation-item">
+                          - {c.source} ({Math.round(c.score * 100)}% match)
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
             {loading && (

@@ -61,6 +61,11 @@ const userSchema = new mongoose.Schema({
     unique: true,
     sparse: true
   },
+  // Personal Info Extras
+  username: { type: String, trim: true, sparse: true },
+  phone: { type: String, trim: true },
+  dob: { type: Date },
+  country: { type: String, trim: true, default: 'India' },
   // Security fields
   emailVerified: {
     type: Boolean,
@@ -100,13 +105,30 @@ const userSchema = new mongoose.Schema({
     },
     theme: {
       type: String,
-      enum: ['light', 'dark', 'system'],
+      enum: ['light', 'dark', 'system', 'neon'],
       default: 'system'
     },
     notifications: {
       email: { type: Boolean, default: true },
       push: { type: Boolean, default: true },
       sms: { type: Boolean, default: false }
+    }
+  },
+  financialPreferences: {
+    monthlyIncomeRange: { type: String, default: 'Not specified' },
+    monthlyBudget: { type: Number, default: 0 },
+    savingsGoal: { type: Number, default: 0 },
+    primaryFinancialGoal: { type: String, default: 'Save money' },
+    budgetPeriod: { type: String, enum: ['Monthly', 'Weekly'], default: 'Monthly' }
+  },
+  aiPreferences: {
+    aiCoachEnabled: { type: Boolean, default: true },
+    riskPreference: { type: String, enum: ['Conservative', 'Moderate', 'Aggressive'], default: 'Moderate' },
+    adviceStyle: { type: String, enum: ['Short & direct', 'Detailed', 'Educational'], default: 'Detailed' },
+    notifications: {
+      weeklySummary: { type: Boolean, default: true },
+      budgetWarnings: { type: Boolean, default: true },
+      savingsSuggestions: { type: Boolean, default: true }
     }
   }
 }, {

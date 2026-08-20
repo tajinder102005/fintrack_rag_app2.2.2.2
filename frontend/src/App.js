@@ -11,6 +11,8 @@ import Notifications from './components/Notifications';
 import Layout from './components/Layout';
 import Home from './components/Home';
 import ErrorBoundary from './components/ErrorBoundary';
+import AdminKnowledgeBase from './components/AdminKnowledgeBase';
+import Profile from './components/Profile';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { DataProvider } from './context/DataContext';
 import { ThemeProvider } from './context/ThemeContext';
@@ -82,6 +84,16 @@ function AppRoutes() {
       <Route path="/notifications" element={
         <ProtectedRoute>
           <Layout><Notifications /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/knowledge" element={
+        <ProtectedRoute>
+          <Layout><AdminKnowledgeBase /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/profile" element={
+        <ProtectedRoute>
+          <Layout><Profile /></Layout>
         </ProtectedRoute>
       } />
 

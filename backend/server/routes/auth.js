@@ -228,7 +228,13 @@ router.get('/me', authMiddleware, async (req, res) => {
         name: user.name,
         email: user.email,
         avatar: user.avatar,
+        username: user.username,
+        phone: user.phone,
+        dob: user.dob,
+        country: user.country,
         preferences: user.preferences,
+        financialPreferences: user.financialPreferences,
+        aiPreferences: user.aiPreferences,
         emailVerified: user.emailVerified,
         lastLogin: user.lastLogin,
         createdAt: user.createdAt,
@@ -256,7 +262,7 @@ router.put('/profile', authMiddleware, [
     .withMessage('Name must be between 2 and 50 characters'),
   
   body('avatar')
-    .optional()
+    .optional({ checkFalsy: true })
     .isURL()
     .withMessage('Avatar must be a valid URL')
 ], async (req, res) => {
@@ -264,7 +270,7 @@ router.put('/profile', authMiddleware, [
     const validationError = handleValidationErrors(req, res);
     if (validationError) return validationError;
 
-    const { name, avatar, preferences } = req.body;
+    const { name, avatar, username, phone, dob, country, preferences, financialPreferences, aiPreferences } = req.body;
     const user = await User.findById(req.user.userId);
 
     if (!user) {
@@ -274,10 +280,20 @@ router.put('/profile', authMiddleware, [
     }
 
     // Update fields
-    if (name) user.name = name.trim();
+    if (name !== undefined) user.name = name.trim();
     if (avatar !== undefined) user.avatar = avatar;
+    if (username !== undefined) user.username = username.trim();
+    if (phone !== undefined) user.phone = phone.trim();
+    if (dob !== undefined) user.dob = dob;
+    if (country !== undefined) user.country = country.trim();
     if (preferences) {
       user.preferences = { ...user.preferences, ...preferences };
+    }
+    if (financialPreferences) {
+      user.financialPreferences = { ...user.financialPreferences, ...financialPreferences };
+    }
+    if (aiPreferences) {
+      user.aiPreferences = { ...user.aiPreferences, ...aiPreferences };
     }
 
     await user.save();
@@ -289,7 +305,13 @@ router.put('/profile', authMiddleware, [
         name: user.name,
         email: user.email,
         avatar: user.avatar,
+        username: user.username,
+        phone: user.phone,
+        dob: user.dob,
+        country: user.country,
         preferences: user.preferences,
+        financialPreferences: user.financialPreferences,
+        aiPreferences: user.aiPreferences,
         emailVerified: user.emailVerified
       }
     });

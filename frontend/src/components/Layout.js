@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import AIAdvisor from './AIAdvisor';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import {
@@ -65,8 +66,8 @@ const Layout = ({ children }) => {
           </button>
         </div>
         
-        <p className="sidebar-tagline">Track every rupee with AI</p>
         
+
         <nav className="sidebar-nav">
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -168,10 +169,13 @@ const Layout = ({ children }) => {
                     </div>
                   </div>
                   <div className="profile-dropdown-body">
-                    <div className="profile-detail">
-                      <span className="label">Account Type</span>
-                      <span className="value">Free</span>
-                    </div>
+                    <Link to="/profile" className="profile-link-btn" onClick={() => setProfileOpen(false)}>
+                      <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                      </svg>
+                      Settings & Profile
+                    </Link>
                   </div>
                   <div className="profile-dropdown-footer">
                     <button className="profile-logout-btn" onClick={logout}>
@@ -193,6 +197,7 @@ const Layout = ({ children }) => {
           {children}
         </main>
       </div>
+      <AIAdvisor />
     </div>
   );
 };
