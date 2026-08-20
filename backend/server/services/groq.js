@@ -1,7 +1,7 @@
-const DEFAULT_MODEL = 'qwen/qwen3.6-27b';
+const DEFAULT_MODEL = 'openai/gpt-oss-20b';
 const FALLBACK_MODELS = [
-  'qwen/qwen3.6-27b',
   'openai/gpt-oss-20b',
+  'qwen/qwen3.6-27b',
   'groq/compound-mini'
 ];
 
@@ -32,7 +32,7 @@ async function callModel(model, apiKey, systemPrompt, contents) {
     model: model,
     messages: messages,
     temperature: 0.65,
-    max_tokens: 1200
+    max_tokens: 2500
   };
 
   const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
