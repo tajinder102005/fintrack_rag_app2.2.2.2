@@ -118,10 +118,10 @@ const Dashboard = () => {
 
         <div className="stat-card quick-add fade-in" style={{ animationDelay: '0.15s' }}>
           <div className="stat-content quick-add-content">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
               <h3 style={{ margin: 0 }}>Quick Add</h3>
-              <Link to="/add-transaction" className="view-all-link" style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px' }}>
-                <Plus size={14} /> Add
+              <Link to="/add-transaction" className="btn btn-primary" style={{ padding: '6px 12px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '6px' }}>
+                <Plus size={16} /> Add
               </Link>
             </div>
             <div className="quick-add-tags">
