@@ -137,11 +137,7 @@ const Layout = ({ children }) => {
                 onClick={toggleProfile}
               >
                 <div className="user-avatar">
-                  {user?.avatar ? (
-                    <img src={user.avatar} alt="Avatar" className="user-avatar-img" />
-                  ) : (
-                    <span className="user-avatar-fallback">{getInitials(user?.name)}</span>
-                  )}
+                  <span className="user-avatar-fallback">{getInitials(user?.name)}</span>
                 </div>
                 <span className="user-name">{user?.name || 'User'}</span>
                 <span className={`profile-chevron ${profileOpen ? 'open' : ''}`}>
