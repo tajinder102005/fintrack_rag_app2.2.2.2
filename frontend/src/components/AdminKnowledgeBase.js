@@ -64,8 +64,7 @@ const AdminKnowledgeBase = () => {
       const response = await fetch(`${backendUrl}/knowledge/upload`, {
         method: 'POST',
         headers: {
-          // If we had strict auth, we would pass the token here:
-          // 'Authorization': `Bearer ${token}` 
+          'Authorization': `Bearer ${token}` 
         },
         body: formData
       });
