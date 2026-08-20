@@ -102,7 +102,7 @@ passport.use(
         user = new User({
           githubId: profile.id,
           name: profile.displayName || profile.username,
-          email: profile.emails && profile.emails.length > 0 ? profile.emails[0].value.toLowerCase() : `${profile.username}@github.local`,
+          email: profile.emails && profile.emails.length > 0 ? profile.emails[0].value.toLowerCase() : `${profile.username}@users.noreply.github.com`,
           avatar: profile.photos && profile.photos.length > 0 ? profile.photos[0].value : '',
           emailVerified: true
         });
